@@ -1,0 +1,32 @@
+{
+	"name": "Tracking Amalan Yaumiyah (Sapriko)",
+	"short_name": "AmalYaum",
+	"description": "Catat dan pantau ibadah harianmu untuk menjadi lebih istiqomah.",
+	"lang": "id-ID",
+	"display": "standalone",
+	"background_color": "#FFFFFF",
+	"theme_color": "#2E8B57",
+	"orientation": "portrait-primary",
+	"scope": "https://amalanyaumiyah.xo.je/isup/riko/",
+	"start_url": "https://amalanyaumiyah.xo.je/isup/riko/index.php?utm_source=pwa",
+	"icons": [
+		{
+			"src": "https://krasyid822.github.io/Drive/android-launchericon-192-192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "https://krasyid822.github.io/Drive/android-launchericon-512-512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	],
+	"shortcuts": [
+		{
+			"name": "Download Laporan Bulan Ini",
+			"short_name": "Download Laporan Bulan Ini",
+			"description": "Unduh laporan amalan dalam CSV",
+			"url": "https://amalanyaumiyah.xo.je/isup/riko/download.php"
+		}
+	]
+}
