@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="192" height="192" role="img" aria-label="Ikon Amalan Yaumiyah 192 - High Contrast">
+  <rect width="100%" height="100%" rx="160" fill="#000000" />
+  <path d="M512 260c-130 0-236 106-236 236h472c0-130-106-236-236-236z" fill="#ffffff"/>
+  <rect x="220" y="520" width="584" height="260" rx="40" fill="#ffffff"/>
+  <rect x="456" y="640" width="112" height="140" rx="18" fill="#000000"/>
+  <rect x="260" y="420" width="60" height="360" rx="12" fill="#ffffff"/>
+  <path d="M290 380c0-22-18-40-40-40s-40 18-40 40" fill="#ffffff"/>
+  <rect x="704" y="420" width="60" height="360" rx="12" fill="#ffffff"/>
+  <path d="M734 380c0-22-18-40-40-40s-40 18-40 40" fill="#ffffff"/>
+  <g transform="translate(720,210) scale(0.9)">
+    <path d="M72.5 0a72.5 72.5 0 1 0 0 145 56 56 0 1 1 0-145z" fill="#f59e0b"/>
+    <path d="M92 36l14 44h46l-37 26 14 44-37-26-37 26 14-44-37-26h46z" transform="translate(-22,14) scale(0.22)" fill="#000"/>
+  </g>
+</svg>
