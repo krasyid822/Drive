@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KNN Iris — Interaktif (Euclidean)</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:18px;color:#111}
+    h1{margin:0 0 8px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .card{border:1px solid #ddd;padding:12px;border-radius:8px;background:#fff}
+    label{display:block;margin-top:8px;font-size:13px}
+    input[type=number], select{width:100%;padding:6px;margin-top:4px}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{border:1px solid #eee;padding:6px;text-align:left;font-size:13px}
+    th{background:#f7f7f7}
+    .explain{font-size:13px;color:#333;margin-top:8px}
+    .small{font-size:12px;color:#666}
+    button{margin-top:10px;padding:8px 12px;border-radius:6px;border:0;background:#0b79d0;color:#fff}
+    .winner{font-weight:700;color:#006400}
+  </style>
+</head>
+<body>
+  <h1>KNN Interaktif — Iris (Euclidean)</h1>
+  <p class="small">Program ini memperagakan K-Nearest Neighbors (KNN) langkah demi langkah: input data baru, hitung jarak Euclidean ke tiap baris dataset, urutkan jarak, pilih k terdekat, lakukan voting untuk menentukan kelas.</p>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <strong>1) Input Data Uji</strong>
+        <div class="explain">Masukkan nilai untuk baris data baru (nilai default berasal dari baris pertama dataset: 5.1, 3.5, 1.4, 0.2).</div>
+        <label> Panjang Sepal (cm) <input id="sepalLength" type="number" step="0.1" value="5.1"></label>
+        <label> Lebar Sepal (cm) <input id="sepalWidth" type="number" step="0.1" value="3.5"></label>
+        <label> Panjang Petal (cm) <input id="petalLength" type="number" step="0.1" value="1.4"></label>
+        <label> Lebar Petal (cm) <input id="petalWidth" type="number" step="0.1" value="0.2"></label>
+
+        <label> Nilai k (jumlah tetangga terdekat) <input id="kValue" type="number" min="1" max="150" value="5"></label>
+        <button id="runBtn">Jalankan KNN</button>
+      </div>
+
+      <div class="card" id="step1">
+        <strong>Dataset (Preview)</strong>
+        <div class="explain">Dataset Iris diambil dari file standar. Di bawah adalah 10 baris pertama untuk referensi.</div>
+        <div id="datasetPreview"></div>
+      </div>
+
+      <div class="card" id="step2">
+        <strong>2) Perhitungan Jarak (Euclidean)</strong>
+        <div class="explain">Untuk setiap baris dataset, kita hitung jarak Euclidean ke data uji: sqrt(sum((x_i - y_i)^2)). Tabel menampilkan jarak untuk tiap baris.</div>
+        <div id="distTable"></div>
+      </div>
+
+      <div class="card" id="step3">
+        <strong>3) Pengurutan Jarak</strong>
+        <div class="explain">Semua baris diurutkan berdasarkan jarak (kecil ke besar). Kita pilih k teratas pada langkah berikut.</div>
+        <div id="sortedTable"></div>
+      </div>
+
+      <div class="card" id="step4">
+        <strong>4) Voting dan Prediksi</strong>
+        <div class="explain">Ambil k tetangga terdekat, hitung frekuensi kelas. Jika terjadi tie, pemenang dipilih berdasarkan jumlah jarak terkecil (total jarak terendah).</div>
+        <div id="neighborsTable"></div>
+        <div id="voteResult"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <strong>Penjelasan Ringkas Tiap Langkah</strong>
+        <ul class="small">
+          <li><b>Langkah 1:</b> Masukkan 4 fitur numerik. Ini adalah data yang ingin kita klasifikasikan.</li>
+          <li><b>Langkah 2:</b> Hitung euclidean distance ke semua sampel dalam dataset.</li>
+          <li><b>Langkah 3:</b> Urutkan baris dataset berdasarkan jarak naik (terdekat dulu).</li>
+          <li><b>Langkah 4:</b> Pilih k teratas dan melakukan voting; kelas yang paling sering muncul menjadi prediksi.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <strong>Petunjuk</strong>
+        <div class="small">- Ubah nilai input dan tekan <b>Jalankan KNN</b>. <br>- Lihat tabel jarak, tabel terurut, dan hasil voting. <br>- File dataset asli: <code>iris.data.csv</code>.</div>
+      </div>
+      
+      <div class="card">
+        <strong>Visualisasi Scatter Plot</strong>
+        <div class="explain">Plot interaktif (default: <b>Panjang Petal</b> vs <b>Lebar Petal</b>). Titik berwarna mewakili kelas, dan tetangga terdekat akan di-highlight. Anda dapat mengganti sumbu x/y.</div>
+        <label>X-axis: <select id="xAxisSelect"><option value="petalLength">Panjang Petal</option><option value="petalWidth">Lebar Petal</option><option value="sepalLength">Panjang Sepal</option><option value="sepalWidth">Lebar Sepal</option></select></label>
+        <label>Y-axis: <select id="yAxisSelect"><option value="petalWidth">Lebar Petal</option><option value="petalLength">Panjang Petal</option><option value="sepalWidth">Lebar Sepal</option><option value="sepalLength">Panjang Sepal</option></select></label>
+        <label style="display:block;margin-top:8px"><input type="checkbox" id="useGradient"> Gunakan gradien warna berdasarkan jarak ke data uji</label>
+        <canvas id="plotCanvas" width="520" height="420" style="width:100%;border:1px solid #eee;margin-top:8px;border-radius:6px;background:#fff"></canvas>
+        <div id="plotLegend" class="small" style="margin-top:6px"></div>
+        <div id="tooltip" style="position:absolute;pointer-events:none;padding:6px 8px;background:#222;color:#fff;border-radius:4px;font-size:12px;display:none;transform:translate(-50%,-120%);white-space:nowrap;z-index:1000"></div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <strong>Tampilkan Perhitungan Langkah-demi-Langkah</strong>
+        <label style="display:block;margin-top:6px"><input type="checkbox" id="showCalculations"> Tampilkan formula dan substitusi setiap langkah (Euclidean, pengurutan, voting)</label>
+        <label style="display:block;margin-top:6px"><input type="checkbox" id="useKatex"> Render rumus dengan KaTeX (butuh koneksi internet untuk memuat CDN)</label>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <button id="openWideBtn" style="padding:6px 8px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer">Lihat Perhitungan Lebih Luas</button>
+          <span class="small" style="color:#666">(membuka panel perhitungan dalam jendela lebar)</span>
+        </div>
+        <div id="calculationSteps" class="small" style="margin-top:8px;max-height:320px;overflow:auto;padding:6px;border:1px dashed #e6e6e6;border-radius:6px;background:#fafafa;display:none"></div>
+        
+        <!-- Modal lebar untuk menampilkan perhitungan -->
+        <div id="calcModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1200;align-items:center;justify-content:center;padding:20px">
+          <div style="background:#fff;border-radius:8px;max-width:1100px;width:100%;max-height:90vh;overflow:auto;padding:14px;position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.2)">
+            <button id="closeModal" style="position:absolute;right:12px;top:12px;border:0;background:#eee;padding:6px 8px;border-radius:6px;cursor:pointer">Tutup</button>
+            <h3 style="margin:0 0 8px">Perhitungan Langkah-demi-Langkah — Tampilan Lebar</h3>
+            <div id="calcModalContent" class="small"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dataset CSV ter-embed (dari iris.data.csv)
+    const irisCSV = `
+5.1,3.5,1.4,0.2,Iris-setosa
+4.9,3.0,1.4,0.2,Iris-setosa
+4.7,3.2,1.3,0.2,Iris-setosa
+4.6,3.1,1.5,0.2,Iris-setosa
+5.0,3.6,1.4,0.2,Iris-setosa
+5.4,3.9,1.7,0.4,Iris-setosa
+4.6,3.4,1.4,0.3,Iris-setosa
+5.0,3.4,1.5,0.2,Iris-setosa
+4.4,2.9,1.4,0.2,Iris-setosa
+4.9,3.1,1.5,0.1,Iris-setosa
+5.4,3.7,1.5,0.2,Iris-setosa
+4.8,3.4,1.6,0.2,Iris-setosa
+4.8,3.0,1.4,0.1,Iris-setosa
+4.3,3.0,1.1,0.1,Iris-setosa
+5.8,4.0,1.2,0.2,Iris-setosa
+5.7,4.4,1.5,0.4,Iris-setosa
+5.4,3.9,1.3,0.4,Iris-setosa
+5.1,3.5,1.4,0.3,Iris-setosa
+5.7,3.8,1.7,0.3,Iris-setosa
+5.1,3.8,1.5,0.3,Iris-setosa
+5.4,3.4,1.7,0.2,Iris-setosa
+5.1,3.7,1.5,0.4,Iris-setosa
+4.6,3.6,1.0,0.2,Iris-setosa
+5.1,3.3,1.7,0.5,Iris-setosa
+4.8,3.4,1.9,0.2,Iris-setosa
+5.0,3.0,1.6,0.2,Iris-setosa
+5.0,3.4,1.6,0.4,Iris-setosa
+5.2,3.5,1.5,0.2,Iris-setosa
+5.2,3.4,1.4,0.2,Iris-setosa
+4.7,3.2,1.6,0.2,Iris-setosa
+4.8,3.1,1.6,0.2,Iris-setosa
+5.4,3.4,1.5,0.4,Iris-setosa
+5.2,4.1,1.5,0.1,Iris-setosa
+5.5,4.2,1.4,0.2,Iris-setosa
+4.9,3.1,1.5,0.1,Iris-setosa
+5.0,3.2,1.2,0.2,Iris-setosa
+5.5,3.5,1.3,0.2,Iris-setosa
+4.9,3.1,1.5,0.1,Iris-setosa
+4.4,3.0,1.3,0.2,Iris-setosa
+5.1,3.4,1.5,0.2,Iris-setosa
+5.0,3.5,1.3,0.3,Iris-setosa
+4.5,2.3,1.3,0.3,Iris-setosa
+4.4,3.2,1.3,0.2,Iris-setosa
+5.0,3.5,1.6,0.6,Iris-setosa
+5.1,3.8,1.9,0.4,Iris-setosa
+4.8,3.0,1.4,0.3,Iris-setosa
+5.1,3.8,1.6,0.2,Iris-setosa
+4.6,3.2,1.4,0.2,Iris-setosa
+5.3,3.7,1.5,0.2,Iris-setosa
+5.0,3.3,1.4,0.2,Iris-setosa
+7.0,3.2,4.7,1.4,Iris-versicolor
+6.4,3.2,4.5,1.5,Iris-versicolor
+6.9,3.1,4.9,1.5,Iris-versicolor
+5.5,2.3,4.0,1.3,Iris-versicolor
+6.5,2.8,4.6,1.5,Iris-versicolor
+5.7,2.8,4.5,1.3,Iris-versicolor
+6.3,3.3,4.7,1.6,Iris-versicolor
+4.9,2.4,3.3,1.0,Iris-versicolor
+6.6,2.9,4.6,1.3,Iris-versicolor
+5.2,2.7,3.9,1.4,Iris-versicolor
+5.0,2.0,3.5,1.0,Iris-versicolor
+5.9,3.0,4.2,1.5,Iris-versicolor
+6.0,2.2,4.0,1.0,Iris-versicolor
+6.1,2.9,4.7,1.4,Iris-versicolor
+5.6,2.9,3.6,1.3,Iris-versicolor
+6.7,3.1,4.4,1.4,Iris-versicolor
+5.6,3.0,4.5,1.5,Iris-versicolor
+5.8,2.7,4.1,1.0,Iris-versicolor
+6.2,2.2,4.5,1.5,Iris-versicolor
+5.6,2.5,3.9,1.1,Iris-versicolor
+5.9,3.2,4.8,1.8,Iris-versicolor
+6.1,2.8,4.0,1.3,Iris-versicolor
+6.3,2.5,4.9,1.5,Iris-versicolor
+6.1,2.8,4.7,1.2,Iris-versicolor
+6.4,2.9,4.3,1.3,Iris-versicolor
+6.6,3.0,4.4,1.4,Iris-versicolor
+6.8,2.8,4.8,1.4,Iris-versicolor
+6.7,3.0,5.0,1.7,Iris-versicolor
+6.0,2.9,4.5,1.5,Iris-versicolor
+5.7,2.6,3.5,1.0,Iris-versicolor
+5.5,2.4,3.8,1.1,Iris-versicolor
+5.5,2.4,3.7,1.0,Iris-versicolor
+5.8,2.7,3.9,1.2,Iris-versicolor
+6.0,2.7,5.1,1.6,Iris-versicolor
+5.4,3.0,4.5,1.5,Iris-versicolor
+6.0,3.4,4.5,1.6,Iris-versicolor
+6.7,3.1,4.7,1.5,Iris-versicolor
+6.3,2.3,4.4,1.3,Iris-versicolor
+5.6,3.0,4.1,1.3,Iris-versicolor
+5.5,2.5,4.0,1.3,Iris-versicolor
+5.5,2.6,4.4,1.2,Iris-versicolor
+6.1,3.0,4.6,1.4,Iris-versicolor
+5.8,2.6,4.0,1.2,Iris-versicolor
+5.0,2.3,3.3,1.0,Iris-versicolor
+5.6,2.7,4.2,1.3,Iris-versicolor
+5.7,3.0,4.2,1.2,Iris-versicolor
+5.7,2.9,4.2,1.3,Iris-versicolor
+6.2,2.9,4.3,1.3,Iris-versicolor
+5.1,2.5,3.0,1.1,Iris-versicolor
+5.7,2.8,4.1,1.3,Iris-versicolor
+6.3,3.3,6.0,2.5,Iris-virginica
+5.8,2.7,5.1,1.9,Iris-virginica
+7.1,3.0,5.9,2.1,Iris-virginica
+6.3,2.9,5.6,1.8,Iris-virginica
+6.5,3.0,5.8,2.2,Iris-virginica
+7.6,3.0,6.6,2.1,Iris-virginica
+4.9,2.5,4.5,1.7,Iris-virginica
+7.3,2.9,6.3,1.8,Iris-virginica
+6.7,2.5,5.8,1.8,Iris-virginica
+7.2,3.6,6.1,2.5,Iris-virginica
+6.5,3.2,5.1,2.0,Iris-virginica
+6.4,2.7,5.3,1.9,Iris-virginica
+6.8,3.0,5.5,2.1,Iris-virginica
+5.7,2.5,5.0,2.0,Iris-virginica
+5.8,2.8,5.1,2.4,Iris-virginica
+6.4,3.2,5.3,2.3,Iris-virginica
+6.5,3.0,5.5,1.8,Iris-virginica
+7.7,3.8,6.7,2.2,Iris-virginica
+7.7,2.6,6.9,2.3,Iris-virginica
+6.0,2.2,5.0,1.5,Iris-virginica
+6.9,3.2,5.7,2.3,Iris-virginica
+5.6,2.8,4.9,2.0,Iris-virginica
+7.7,2.8,6.7,2.0,Iris-virginica
+6.3,2.7,4.9,1.8,Iris-virginica
+6.7,3.3,5.7,2.1,Iris-virginica
+7.2,3.2,6.0,1.8,Iris-virginica
+6.2,2.8,4.8,1.8,Iris-virginica
+6.1,3.0,4.9,1.8,Iris-virginica
+6.4,2.8,5.6,2.1,Iris-virginica
+7.2,3.0,5.8,1.6,Iris-virginica
+7.4,2.8,6.1,1.9,Iris-virginica
+7.9,3.8,6.4,2.0,Iris-virginica
+6.4,2.8,5.6,2.2,Iris-virginica
+6.3,2.8,5.1,1.5,Iris-virginica
+6.1,2.6,5.6,1.4,Iris-virginica
+7.7,3.0,6.1,2.3,Iris-virginica
+6.3,3.4,5.6,2.4,Iris-virginica
+6.4,3.1,5.5,1.8,Iris-virginica
+6.0,3.0,4.8,1.8,Iris-virginica
+6.9,3.1,5.4,2.1,Iris-virginica
+6.7,3.1,5.6,2.4,Iris-virginica
+6.9,3.1,5.1,2.3,Iris-virginica
+5.8,2.7,5.1,1.9,Iris-virginica
+6.8,3.2,5.9,2.3,Iris-virginica
+6.7,3.3,5.7,2.5,Iris-virginica
+6.7,3.0,5.2,2.3,Iris-virginica
+6.3,2.5,5.0,1.9,Iris-virginica
+6.5,3.0,5.2,2.0,Iris-virginica
+6.2,3.4,5.4,2.3,Iris-virginica
+5.9,3.0,5.1,1.8,Iris-virginica
+`.trim();
+
+    function parseCSV(csv){
+      const lines = csv.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      return lines.map((line,idx)=>{
+        const parts = line.split(',');
+        return {
+          index: idx+1,
+          sepalLength: parseFloat(parts[0]),
+          sepalWidth: parseFloat(parts[1]),
+          petalLength: parseFloat(parts[2]),
+          petalWidth: parseFloat(parts[3]),
+          species: parts[4]
+        };
+      });
+    }
+
+    const dataset = parseCSV(irisCSV);
+
+    // Tampilkan preview 10 baris
+    function renderDatasetPreview(){
+      const rows = dataset.slice(0,10).map(r=>`<tr><td>${r.index}</td><td>${r.sepalLength}</td><td>${r.sepalWidth}</td><td>${r.petalLength}</td><td>${r.petalWidth}</td><td>${r.species}</td></tr>`).join('');
+      document.getElementById('datasetPreview').innerHTML = '<table><thead><tr><th>#</th><th>Panjang Sepal</th><th>Lebar Sepal</th><th>Panjang Petal</th><th>Lebar Petal</th><th>Kelas</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    }
+
+    // Peta warna untuk kelas
+    const classColor = {
+      'Iris-setosa':'#d93b3b',
+      'Iris-versicolor':'#2e9b2e',
+      'Iris-virginica':'#2563eb'
+    };
+
+    // Menyimpan posisi titik terakhir yang diplot (untuk tooltip)
+    let lastPlottedPoints = [];
+
+    // KaTeX loader helper
+    let _katexLoading = null;
+    function ensureKaTeX(){
+      if(window.katex) return Promise.resolve();
+      if(_katexLoading) return _katexLoading;
+      _katexLoading = new Promise((resolve)=>{
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.css';
+        link.integrity = 'sha384-zwe6pW3vNpSAm9N5nxs4DwK8QeN16vV8RucloafZsrekIU7xKiiuqy4HLWkU2Riu';
+        link.crossOrigin = 'anonymous';
+        document.head.appendChild(link);
+        const s = document.createElement('script');
+        s.defer = true;
+        s.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.js';
+        s.integrity = 'sha384-mTVPTBn/0kM0yWaqliefRha4kvY4Kp8ZDiuOesy1VHrgSvh8SxGicb4abVRHCGdo';
+        s.crossOrigin = 'anonymous';
+        s.onload = ()=> resolve();
+        s.onerror = ()=> resolve();
+        document.head.appendChild(s);
+      });
+      return _katexLoading;
+    }
+
+    function renderK(latex){
+      try{ if(window.katex && katex.renderToString) return katex.renderToString(latex, {throwOnError:false}); }catch(e){/*ignore*/}
+      return `<code>${latex}</code>`;
+    }
+
+    // util: interpolasi warna linear antara dua RGB
+    function lerp(a,b,t){ return a + (b-a)*t; }
+    function rgbToStr(r,g,b){ return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`; }
+    function distanceToColor(dist, minD, maxD){
+      if(minD === maxD) return rgbToStr(150,150,150);
+      let t = (dist - minD) / (maxD - minD);
+      t = Math.max(0, Math.min(1, t));
+      // dekat -> lebih gelap (hijau), jauh -> lebih abu
+      const near = [34,139,34]; // hijau
+      const far = [200,200,200];
+      const r = lerp(near[0], far[0], t);
+      const g = lerp(near[1], far[1], t);
+      const b = lerp(near[2], far[2], t);
+      return rgbToStr(r,g,b);
+    }
+
+    // Fungsi plotting sederhana
+    function drawScatter(dataset, testPoint, neighbors, xKey='petalLength', yKey='petalWidth'){
+      const canvas = document.getElementById('plotCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+      const margin = {top:20,right:20,bottom:36,left:44};
+      const plotW = w - margin.left - margin.right;
+      const plotH = h - margin.top - margin.bottom;
+
+      const xs = dataset.map(d=>d[xKey]);
+      const ys = dataset.map(d=>d[yKey]);
+      if(testPoint){ xs.push(testPoint[xKey]); ys.push(testPoint[yKey]); }
+
+      const minX = Math.min(...xs); const maxX = Math.max(...xs);
+      const minY = Math.min(...ys); const maxY = Math.max(...ys);
+      const padX = (maxX - minX) * 0.08 || 0.5;
+      const padY = (maxY - minY) * 0.08 || 0.5;
+
+      const toCanvasX = x=> margin.left + ((x - (minX - padX)) / ((maxX + padX) - (minX - padX))) * plotW;
+      const toCanvasY = y=> margin.top + plotH - ((y - (minY - padY)) / ((maxY + padY) - (minY - padY))) * plotH;
+
+      // Axis
+      ctx.strokeStyle = '#ccc'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(margin.left, margin.top); ctx.lineTo(margin.left, margin.top+plotH); ctx.lineTo(margin.left+plotW, margin.top+plotH); ctx.stroke();
+
+      // Ticks & labels (simple)
+      ctx.fillStyle = '#333'; ctx.font = '12px Arial'; ctx.textAlign = 'center';
+      for(let i=0;i<=4;i++){
+        const vx = minX - padX + (i/4)*((maxX+padX)-(minX-padX));
+        const cx = toCanvasX(vx);
+        ctx.fillText(vx.toFixed(2), cx, margin.top+plotH+16);
+      }
+      ctx.save(); ctx.translate(10, margin.top + plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign = 'center'; ctx.fillText(xKey === 'petalLength' ? 'Panjang Petal (cm)' : xKey === 'petalWidth' ? 'Lebar Petal (cm)' : xKey === 'sepalLength' ? 'Panjang Sepal (cm)' : 'Lebar Sepal (cm)', 0,0); ctx.restore();
+      ctx.textAlign = 'center'; ctx.fillText(yKey === 'petalWidth' ? 'Lebar Petal (cm)' : yKey === 'petalLength' ? 'Panjang Petal (cm)' : yKey === 'sepalWidth' ? 'Lebar Sepal (cm)' : 'Panjang Sepal (cm)', margin.left + plotW/2, h-4);
+
+      // draw points
+      // hitung jarak tiap titik ke testPoint bila ada, dan simpan posisi untuk tooltip
+      lastPlottedPoints = [];
+      const allDistances = [];
+      dataset.forEach(d=>{
+        const cx = toCanvasX(d[xKey]); const cy = toCanvasY(d[yKey]);
+        let dist = null;
+        if(testPoint){ dist = euclidean(testPoint, d); allDistances.push(dist); }
+        lastPlottedPoints.push({x:cx,y:cy,index:d.index,distance:dist,species:d.species,raw:d});
+      });
+
+      // jika gradien diaktifkan dan ada testPoint, buat rentang jarak
+      const useGradient = !!document.getElementById('useGradient').checked;
+      const minD = allDistances.length ? Math.min(...allDistances) : 0;
+      const maxD = allDistances.length ? Math.max(...allDistances) : 0;
+
+      lastPlottedPoints.forEach(p=>{
+        const cx = p.x; const cy = p.y;
+        ctx.beginPath();
+        if(useGradient && p.distance !== null){
+          ctx.fillStyle = distanceToColor(p.distance, minD, maxD);
+        } else {
+          ctx.fillStyle = classColor[p.species] || '#999';
+        }
+        ctx.globalAlpha = 0.95;
+        ctx.arc(cx, cy, 4, 0, Math.PI*2); ctx.fill();
+      });
+
+      // highlight neighbors (if any)
+      if(neighbors && neighbors.length){
+        neighbors.forEach(n=>{
+          // cari lastPlottedPoints yang cocok berdasarkan index
+          const found = lastPlottedPoints.find(p=>p.index === n.index);
+          const cx = found ? found.x : toCanvasX(n[xKey]);
+          const cy = found ? found.y : toCanvasY(n[yKey]);
+          ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = '#000'; ctx.fillStyle = classColor[n.species] || '#999'; ctx.globalAlpha = 1;
+          ctx.arc(cx, cy, 7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        });
+      }
+
+      // draw test point
+      if(testPoint){
+        const cx = toCanvasX(testPoint[xKey]); const cy = toCanvasY(testPoint[yKey]);
+        ctx.beginPath(); ctx.fillStyle = '#000'; ctx.globalAlpha = 1; ctx.moveTo(cx-6,cy-6); ctx.lineTo(cx+6,cy+6); ctx.moveTo(cx+6,cy-6); ctx.lineTo(cx-6,cy+6); ctx.stroke();
+        ctx.beginPath(); ctx.fillStyle = '#000'; ctx.arc(cx, cy, 3,0,Math.PI*2); ctx.fill();
+      }
+
+      // legend
+      const legend = Object.keys(classColor).map(k=>`<span style="display:inline-block;margin-right:8px"><span style="display:inline-block;width:12px;height:12px;background:${classColor[k]};border-radius:3px;margin-right:6px;vertical-align:middle"></span>${k}</span>`).join('');
+      const gradientNote = useGradient && testPoint ? ' • gradien aktif' : '';
+      document.getElementById('plotLegend').innerHTML = legend + (neighbors && neighbors.length ? `<div style="margin-top:6px" class="small">Highlighted: ${neighbors.length} tetangga${gradientNote}</div>` : `<div class="small">${gradientNote}</div>`);
+    }
+
+    // Tooltip handling: tampilkan index & distance saat hover
+    const canvasEl = document.getElementById('plotCanvas');
+    const tooltipEl = document.getElementById('tooltip');
+    canvasEl.addEventListener('mousemove', (ev)=>{
+      const rect = canvasEl.getBoundingClientRect();
+      const mx = ev.clientX - rect.left; const my = ev.clientY - rect.top;
+      // cari titik terdekat dalam radius
+      let best = null; let bestDist = 9999;
+      lastPlottedPoints.forEach(p=>{
+        const dx = mx - p.x; const dy = my - p.y; const d = Math.sqrt(dx*dx + dy*dy);
+        if(d < bestDist){ bestDist = d; best = p; }
+      });
+      if(best && bestDist <= 8){
+        // tampilkan tooltip
+        tooltipEl.style.display = 'block';
+        tooltipEl.style.left = (ev.clientX) + 'px';
+        tooltipEl.style.top = (ev.clientY) + 'px';
+        tooltipEl.innerHTML = `#${best.index} — ${best.species}` + (best.distance !== null ? ` — jarak: ${best.distance.toFixed(4)}` : '');
+      } else {
+        tooltipEl.style.display = 'none';
+      }
+    });
+    canvasEl.addEventListener('mouseleave', ()=>{ tooltipEl.style.display = 'none'; });
+
+    function euclidean(a,b){
+      const dx = a.sepalLength - b.sepalLength;
+      const dy = a.sepalWidth - b.sepalWidth;
+      const dz = a.petalLength - b.petalLength;
+      const dw = a.petalWidth - b.petalWidth;
+      return Math.sqrt(dx*dx + dy*dy + dz*dz + dw*dw);
+    }
+
+    function renderDistanceTable(distances){
+      const rows = distances.map(d=>`<tr><td>${d.index}</td><td>${d.sepalLength}</td><td>${d.sepalWidth}</td><td>${d.petalLength}</td><td>${d.petalWidth}</td><td>${d.species}</td><td>${d.distance.toFixed(4)}</td></tr>`).join('');
+      document.getElementById('distTable').innerHTML = '<table><thead><tr><th>#</th><th>SL</th><th>SW</th><th>PL</th><th>PW</th><th>Kelas</th><th>Jarak</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    }
+
+    function renderSortedTable(sorted){
+      const rows = sorted.map((d,i)=>`<tr><td>${i+1}</td><td>${d.index}</td><td>${d.species}</td><td>${d.distance.toFixed(4)}</td></tr>`).join('');
+      document.getElementById('sortedTable').innerHTML = '<table><thead><tr><th>Rank</th><th>#</th><th>Kelas</th><th>Jarak</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    }
+
+    function renderNeighborsTable(neighbors){
+      const rows = neighbors.map((n,i)=>`<tr><td>${i+1}</td><td>${n.index}</td><td>${n.species}</td><td>${n.distance.toFixed(4)}</td></tr>`).join('');
+      document.getElementById('neighborsTable').innerHTML = '<div class="small">Tetangga terdekat (k)</div><table><thead><tr><th>#</th><th>Index</th><th>Kelas</th><th>Jarak</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    }
+
+    function renderVoteResult(vote){
+      // vote: {counts: Map, distances: Map}
+      const classes = Array.from(vote.counts.keys()).map(k=>({
+        cls:k,
+        count:vote.counts.get(k),
+        totalDistance:vote.distances.get(k)
+      }));
+      classes.sort((a,b)=>b.count - a.count || a.totalDistance - b.totalDistance);
+      const rows = classes.map(c=>`<tr><td>${c.cls}</td><td>${c.count}</td><td>${c.totalDistance.toFixed(4)}</td></tr>`).join('');
+      const winner = classes[0];
+      document.getElementById('voteResult').innerHTML = '<div class="small">Hasil voting (kelas, jumlah, jumlah jarak). Pemenang: <span class="winner">'+winner.cls+'</span></div><table><thead><tr><th>Kelas</th><th>Jumlah</th><th>Total Jarak</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    }
+
+    document.getElementById('runBtn').addEventListener('click', ()=>{
+      // Ambil input
+      const test = {
+        sepalLength: parseFloat(document.getElementById('sepalLength').value),
+        sepalWidth: parseFloat(document.getElementById('sepalWidth').value),
+        petalLength: parseFloat(document.getElementById('petalLength').value),
+        petalWidth: parseFloat(document.getElementById('petalWidth').value)
+      };
+      let k = parseInt(document.getElementById('kValue').value,10);
+      if(isNaN(k) || k<1) k = 1;
+
+      // Langkah 2: hitung jarak ke semua sampel
+      const distances = dataset.map(d=>({
+        index:d.index,
+        sepalLength:d.sepalLength,
+        sepalWidth:d.sepalWidth,
+        petalLength:d.petalLength,
+        petalWidth:d.petalWidth,
+        species:d.species,
+        distance: euclidean(test, d)
+      }));
+      renderDistanceTable(distances);
+
+      // Langkah 3: urutkan berdasarkan jarak
+      const sorted = distances.slice().sort((a,b)=>a.distance - b.distance);
+      renderSortedTable(sorted);
+
+      // Langkah 4: pilih k teratas dan voting
+      const neighbors = sorted.slice(0,k);
+      renderNeighborsTable(neighbors);
+
+      // Plot: pilih sumbu dari select
+      const xKey = document.getElementById('xAxisSelect').value;
+      const yKey = document.getElementById('yAxisSelect').value;
+      // buat salinan neighbors yang memuat keys untuk akses langsung
+      const neighborsForPlot = neighbors.map(n=>({
+        ...n,
+        sepalLength: n.sepalLength, sepalWidth: n.sepalWidth, petalLength: n.petalLength, petalWidth: n.petalWidth
+      }));
+      drawScatter(dataset, test, neighborsForPlot, xKey, yKey);
+
+      const counts = new Map();
+      const sumDistances = new Map();
+      neighbors.forEach(n=>{
+        counts.set(n.species, (counts.get(n.species)||0)+1);
+        sumDistances.set(n.species, (sumDistances.get(n.species)||0) + n.distance);
+      });
+
+      // Cari pemenang: tertinggi count; jika tie gunakan totalDistance terkecil
+      renderVoteResult({counts:counts, distances:sumDistances});
+
+      // Show calculation steps if requested
+      const showCalc = document.getElementById('showCalculations').checked;
+      const calcContainer = document.getElementById('calculationSteps');
+      const katexRequested = document.getElementById('useKatex').checked;
+      if(showCalc){
+        calcContainer.style.display = 'block';
+        if(katexRequested){
+          ensureKaTeX().then(()=>{
+            calcContainer.innerHTML = renderCalculationSteps(dataset, test, distances, sorted, neighbors, counts, sumDistances, true);
+          });
+        } else {
+          calcContainer.innerHTML = renderCalculationSteps(dataset, test, distances, sorted, neighbors, counts, sumDistances, false);
+        }
+      } else {
+        calcContainer.style.display = 'none';
+        calcContainer.innerHTML = '';
+      }
+
+      // Update modal content if modal is open
+      const modal = document.getElementById('calcModal');
+      const modalContent = document.getElementById('calcModalContent');
+      if(modal && modal.style.display === 'flex'){
+        modalContent.innerHTML = calcContainer.innerHTML;
+      }
+    });
+
+    // Modal open/close handlers
+    document.getElementById('openWideBtn').addEventListener('click', ()=>{
+      const calcContainer = document.getElementById('calculationSteps');
+      const modal = document.getElementById('calcModal');
+      const modalContent = document.getElementById('calcModalContent');
+      // if calc container hidden, show it as well so there's content
+      if(calcContainer.style.display === 'none') calcContainer.style.display = 'block';
+      modalContent.innerHTML = calcContainer.innerHTML;
+      modal.style.display = 'flex';
+    });
+    document.getElementById('closeModal').addEventListener('click', ()=>{
+      const modal = document.getElementById('calcModal');
+      modal.style.display = 'none';
+    });
+
+    // Fungsi untuk membuat HTML penjelasan perhitungan langkah-demi-langkah
+    function renderCalculationSteps(dataset, test, distances, sorted, neighbors, counts, sumDistances, katexEnabled){
+      function fnum(x){ return (typeof x === 'number') ? x.toFixed(4) : x; }
+      let html = '';
+      html += `<div style="margin-bottom:8px"><strong>Langkah 1 — Data Uji</strong><div>Data uji: SL=${fnum(test.sepalLength)}, SW=${fnum(test.sepalWidth)}, PL=${fnum(test.petalLength)}, PW=${fnum(test.petalWidth)}</div>`;
+      html += `<div style="margin-top:6px;color:#444">Penjelasan singkat: Empat fitur (panjang/lebar sepal dan petal) adalah ukuran fisik bunga yang membedakan spesies. Kita memasukkan nilai ini karena KNN bekerja dengan mengukur seberapa "dekat" data uji dengan contoh-contoh yang sudah diberi label.</div></div>`;
+
+      if(katexEnabled){
+        const latexFormula = String.raw`d = \sqrt{(SL_i - SL_q)^2 + (SW_i - SW_q)^2 + (PL_i - PL_q)^2 + (PW_i - PW_q)^2}`;
+        html += `<div style="margin-bottom:8px"><strong>Langkah 2 — Perhitungan Jarak (Euclidean)</strong><div>Rumus: ${renderK(latexFormula)}</div>`;
+      } else {
+        html += `<div style="margin-bottom:8px"><strong>Langkah 2 — Perhitungan Jarak (Euclidean)</strong><div>Rumus: d = sqrt((SL_i - SL_q)^2 + (SW_i - SW_q)^2 + (PL_i - PL_q)^2 + (PW_i - PW_q)^2)</div>`;
+      }
+      html += `<div style="margin-top:6px;color:#444">Penjelasan singkat: Euclidean distance mengukur jarak lurus di ruang fitur 4-dimensi. Nilai lebih kecil berarti sampel lebih mirip dengan data uji. Kita kuadratkan selisihnya agar tanda minus tidak membatalkan, lalu menjumlahkan dan mengambil akar agar jarak tetap dalam satuan fitur (cm).</div>`;
+      html += `<table style="width:100%;border-collapse:collapse;margin-top:6px"><thead><tr style="background:#f1f1f1"><th style="padding:6px;border:1px solid #eee">#</th><th style="padding:6px;border:1px solid #eee">Data</th><th style="padding:6px;border:1px solid #eee">Substitusi</th><th style="padding:6px;border:1px solid #eee">d</th></tr></thead><tbody>`;
+      distances.forEach(d=>{
+        const dx = (d.sepalLength - test.sepalLength).toFixed(4);
+        const dy = (d.sepalWidth - test.sepalWidth).toFixed(4);
+        const dz = (d.petalLength - test.petalLength).toFixed(4);
+        const dw = (d.petalWidth - test.petalWidth).toFixed(4);
+        if(katexEnabled){
+          const latexSubs = `\\sqrt{(${dx})^2 + (${dy})^2 + (${dz})^2 + (${dw})^2}`;
+          html += `<tr><td style="padding:6px;border:1px solid #eee">${d.index}</td><td style="padding:6px;border:1px solid #eee">${fnum(d.sepalLength)}, ${fnum(d.sepalWidth)}, ${fnum(d.petalLength)}, ${fnum(d.petalWidth)} (${d.species})</td><td style="padding:6px;border:1px solid #eee">${renderK(latexSubs)}</td><td style="padding:6px;border:1px solid #eee">${fnum(d.distance)}</td></tr>`;
+        } else {
+          const a = `sqrt((${fnum(d.sepalLength)} - ${fnum(test.sepalLength)})^2 + (${fnum(d.sepalWidth)} - ${fnum(test.sepalWidth)})^2 + (${fnum(d.petalLength)} - ${fnum(test.petalLength)})^2 + (${fnum(d.petalWidth)} - ${fnum(test.petalWidth)})^2)`;
+          const subs = `sqrt((${dx})^2 + (${dy})^2 + (${dz})^2 + (${dw})^2)`;
+          html += `<tr><td style="padding:6px;border:1px solid #eee">${d.index}</td><td style="padding:6px;border:1px solid #eee">${fnum(d.sepalLength)}, ${fnum(d.sepalWidth)}, ${fnum(d.petalLength)}, ${fnum(d.petalWidth)} (${d.species})</td><td style="padding:6px;border:1px solid #eee">${a}<br><small>${subs}</small></td><td style="padding:6px;border:1px solid #eee">${fnum(d.distance)}</td></tr>`;
+        }
+      });
+      html += `</tbody></table></div>`;
+
+      html += `<div style="margin-top:8px"><strong>Langkah 3 — Pengurutan Jarak</strong><div>Tabel diurutkan berdasarkan d (kecil → besar). Berikut 10 teratas:</div>`;
+      html += `<div style="margin-top:6px;color:#444">Penjelasan singkat: Dengan mengurutkan jarak, kita menemukan sampel-sampel yang paling mirip (terdekat). KNN memilih beberapa teratas (k) karena hanya tetangga terdekat yang dianggap paling relevan untuk menentukan kelas data uji.</div>`;
+      html += `<div style="margin-top:6px;color:#333"><strong>Rumus umum (notasi):</strong> d(x_i, x_q) = sqrt( sum_{j=1}^4 (x_{ij} - x_{qj})^2 ). Di sini x_{ij} adalah nilai fitur ke-j pada sampel i, dan x_{qj} adalah fitur ke-j pada data uji q. Rumus ini adalah bentuk umum Euclidean distance di ruang fitur berdimensi-4 yang kita gunakan untuk mengukur kemiripan.</div>`;
+      html += `<table style="width:100%;border-collapse:collapse;margin-top:6px"><thead><tr style="background:#f1f1f1"><th style="padding:6px;border:1px solid #eee">Rank</th><th style="padding:6px;border:1px solid #eee">Index</th><th style="padding:6px;border:1px solid #eee">Kelas</th><th style="padding:6px;border:1px solid #eee">d</th></tr></thead><tbody>`;
+      sorted.slice(0,10).forEach((s,i)=>{ html += `<tr><td style="padding:6px;border:1px solid #eee">${i+1}</td><td style="padding:6px;border:1px solid #eee">${s.index}</td><td style="padding:6px;border:1px solid #eee">${s.species}</td><td style="padding:6px;border:1px solid #eee">${fnum(s.distance)}</td></tr>`; });
+      html += `</tbody></table></div>`;
+      if(katexEnabled){
+        const latexGeneral = String.raw`d( x_i, x_q ) = \sqrt{ \sum_{j=1}^{4} ( x_{ij} - x_{qj} )^2 }`;
+        html += `<div style="margin-top:6px;color:#333">Rumus umum: ${renderK(latexGeneral)}</div>`;
+      } else {
+        html += `<div style="margin-top:6px;color:#333"><strong>Rumus umum (notasi):</strong> d(x_i, x_q) = sqrt( sum_{j=1}^4 (x_{ij} - x_{qj})^2 ).</div>`;
+      }
+
+      html += `<div style="margin-top:8px"><strong>Langkah 4 — Voting (k = ${neighbors.length})</strong><div>Daftar k tetangga terdekat dan perhitungan voting:</div>`;
+      html += `<div style="margin-top:6px;color:#444">Penjelasan singkat: Setelah memilih k tetangga terdekat, kita hitung berapa banyak tiap kelas muncul (voting mayoritas). Kelas yang muncul paling sering menjadi prediksi. Jika terjadi seri (tie), kita gunakan jumlah total jarak sebagai tie-break: kelas dengan total jarak lebih kecil dianggap lebih dekat secara keseluruhan dan dipilih.</div>`;
+      html += `<table style="width:100%;border-collapse:collapse;margin-top:6px"><thead><tr style="background:#f1f1f1"><th style="padding:6px;border:1px solid #eee">#</th><th style="padding:6px;border:1px solid #eee">Index</th><th style="padding:6px;border:1px solid #eee">Kelas</th><th style="padding:6px;border:1px solid #eee">d</th></tr></thead><tbody>`;
+      neighbors.forEach((n,i)=>{ html += `<tr><td style="padding:6px;border:1px solid #eee">${i+1}</td><td style="padding:6px;border:1px solid #eee">${n.index}</td><td style="padding:6px;border:1px solid #eee">${n.species}</td><td style="padding:6px;border:1px solid #eee">${fnum(n.distance)}</td></tr>`; });
+      html += `</tbody></table>`;
+
+      html += `<div style="margin-top:8px"><strong>Perhitungan Voting:</strong><div>Hitung jumlah tiap kelas dan jumlah total jarak tiap kelas (sebagai tie-break).</div>`;
+      html += `<div style="margin-top:6px;color:#444">Catatan tambahan: Pilihan nilai k memengaruhi hasil — k kecil membuat keputusan lebih dipengaruhi oleh tetangga sangat dekat (lebih sensitif terhadap noise), sedangkan k besar membuat keputusan lebih stabil tetapi bisa memasukkan tetangga yang kurang relevan. Pilih k ganjil untuk mengurangi kemungkinan tie ketika hanya dua kelas yang dominan.</div>`;
+      html += `<table style="width:100%;border-collapse:collapse;margin-top:6px"><thead><tr style="background:#f1f1f1"><th style="padding:6px;border:1px solid #eee">Kelas</th><th style="padding:6px;border:1px solid #eee">Jumlah</th><th style="padding:6px;border:1px solid #eee">Total Jarak</th></tr></thead><tbody>`;
+      Array.from(counts.keys()).forEach(kc=>{ html += `<tr><td style="padding:6px;border:1px solid #eee">${kc}</td><td style="padding:6px;border:1px solid #eee">${counts.get(kc)}</td><td style="padding:6px;border:1px solid #eee">${fnum(sumDistances.get(kc) || 0)}</td></tr>`; });
+      html += `</tbody></table>`;
+
+      // tentukan pemenang secara eksplisit
+      const classes = Array.from(counts.keys()).map(k=>({cls:k,count:counts.get(k),total:sumDistances.get(k) || 0}));
+      classes.sort((a,b)=>b.count - a.count || a.total - b.total);
+      if(classes.length){
+        html += `<div style="margin-top:8px"><strong>Pemenang:</strong> <span style="color:#006400;font-weight:700">${classes[0].cls}</span> (jumlah=${classes[0].count}`;
+        html += `, total jarak=${fnum(classes[0].total)})</div>`;
+        if(classes.length>1 && classes[0].count === classes[1].count){
+          html += `<div style="margin-top:6px;color:#666"><em>Terjadi tie pada jumlah suara; tie-break menggunakan total jarak (lebih kecil menang).</em></div>`;
+        }
+      }
+
+      html += `</div>`;
+      return html;
+    }
+
+    // Render awal
+    renderDatasetPreview();
+  </script>
+</body>
+</html>
