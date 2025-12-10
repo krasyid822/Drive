@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Curriculum Vitae - Rasyid Kurniawan</title>
+  <style>
+    :root{--accent:#0a74da;--muted:#666;font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif}
+    *{box-sizing:border-box}
+    body{margin:0;background:#f4f7fb;color:#222;font-family:var(--font-family,Inter),sans-serif}
+    .container{max-width:900px;margin:28px auto;background:#fff;border-radius:8px;box-shadow:0 6px 24px rgba(15,20,30,0.08);overflow:hidden}
+    header{display:flex;gap:20px;padding:28px;border-bottom:1px solid #eef2f7;align-items:center}
+    .photo{width:110px;height:110px;border-radius:8px;background:linear-gradient(135deg,#e6eefc,#f2fbff);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted);overflow:hidden}
+    .photo img{width:100%;height:100%;object-fit:cover;display:block;border-radius:6px}
+    .profile{flex:1}
+    h1{margin:0;font-size:24px}
+    .title{color:var(--muted);margin-top:4px}
+    .contact{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;color:var(--muted);font-size:14px}
+    main{display:grid;grid-template-columns:1fr 320px;gap:28px;padding:24px}
+    section{background:transparent}
+    .section-title{font-weight:700;color:var(--accent);margin-bottom:10px}
+    .summary{line-height:1.5;color:#333}
+    .card{margin-bottom:18px}
+    .item{padding:12px;border-left:3px solid #f1f5f9;background:#fbfcff;border-radius:4px}
+    .item h3{margin:0;font-size:16px}
+    .muted{color:var(--muted);font-size:13px}
+    ul.skills{list-style:none;padding:0;margin:8px 0;display:flex;flex-wrap:wrap;gap:8px}
+    ul.skills li{background:#eef6ff;color:var(--accent);padding:6px 10px;border-radius:999px;font-size:13px}
+    aside{padding-left:8px}
+    .profile-block{padding:12px;background:#fbfcff;border-radius:6px;margin-bottom:16px}
+    .small-list{list-style:none;padding:0;margin:0}
+    .small-list li{padding:6px 0;border-bottom:1px dashed #eef2f7;font-size:14px}
+    footer{padding:16px 24px;border-top:1px solid #eef2f7;background:#fafbfd;text-align:center;color:var(--muted);font-size:13px}
+
+    /* Responsive */
+    @media (max-width:880px){main{grid-template-columns:1fr;padding:16px}.photo{width:86px;height:86px}}
+
+    /* Print */
+    @media print{
+      body{background:#fff}
+      .container{box-shadow:none;margin:0;border-radius:0}
+      header, footer{display:none}
+      main{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="photo">
+        <img src="Hasil_Foto/foto_20251210_142257.jpg" alt="Foto Profil" />
+      </div>
+      <div class="profile">
+        <h1>Rasyid Kurniawan</h1>
+        <div class="title">Web Developer</div>
+        <div class="contact">
+          <div>Email: <strong><a href="mailto:krasyid822@gmail.com">krasyid822@gmail.com</a></strong></div>
+          <div>•</div>
+          <div>Tel: <strong>+62 823 8625 1881</strong></div>
+          <div>•</div>
+          <div>Lokasi: <span class="muted">Medan, Indonesia</span></div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="card">
+          <div class="section-title">Ringkasan</div>
+            <div class="item summary">Saya pengembang web (Web Developer) yang berfokus pada optimasi performa dan pengalaman pengguna. Berpengalaman membangun aplikasi web ringan dan progresif (PWA), termasuk proyek pengingat jadwal sholat yang mencapai ukuran distribusi awal sekitar ~200KB. Keahlian utama: HTML, CSS, JavaScript; saya terbiasa mengoptimalkan aset dan menyediakan pengalaman akses cepat tanpa perlu instalasi.</div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Pengalaman Kerja</div>
+
+            <div class="item">
+              <h3>Pengembang — Proyek Pengingat Jadwal Sholat (Proyek Pribadi)</h3>
+              <div class="muted">15/08/2025 — Sekarang (aktif)</div>
+              <ul class="small-list" style="margin-top:8px">
+                <li>Memimpin pengembangan aplikasi pengingat jadwal sholat sebagai pengembang tunggal (15/08/2025 — sekarang).</li>
+                <li>Mengurangi ukuran distribusi awal menjadi ~200KB melalui minifikasi, pengurangan dependensi, dan optimasi aset.</li>
+                <li>Menerapkan PWA (manifest.json) untuk mendukung instalasi langsung dari browser.</li>
+                <li>Menangani deployment di GitHub Pages serta pemeliharaan berkala untuk peningkatan performa.</li>
+              </ul>
+            </div>
+
+            <div class="item">
+              <h3>Pengembang — Proyek Unlimited Cloud Storage (Proyek Pribadi)</h3>
+              <div class="muted">13/09/2025 — Sekarang (pengembangan awal)</div>
+              <ul class="small-list" style="margin-top:8px">
+                <li>Mengembangkan prototipe "Unlimited Cloud Storage" (13/09/2025 — sekarang).</li>
+                <li>Prototipe berhasil pada level teknis dasar; masih diperlukan optimasi responsivitas dan arsitektur I/O.</li>
+                <li>Rencana selanjutnya: optimasi performa backend dan pengujian beban sebelum skala lanjut.</li>
+              </ul>
+            </div>
+
+            <div class="item">
+              <h3>Teknisi Jaringan & Instalasi</h3>
+              <div class="muted">(pengalaman lapangan)</div>
+              <ul class="small-list" style="margin-top:8px">
+                <li>Melaksanakan pemasangan kabel fiber optik single-core (pasif & aktif), terminasi, dan pengujian konektivitas.</li>
+                <li>Melakukan instalasi listrik dasar untuk keperluan rumahan, termasuk penarikan kabel dan langkah keselamatan dasar.</li>
+              </ul>
+            </div>
+
+          </div>
+
+          <div class="card">
+            <div class="section-title">Proyek Lain</div>
+            <div class="item">
+              <h3>Web Index — Hosted Project</h3>
+              <div class="muted">https://krasyid822.github.io</div>
+            <p class="muted">Kumpulan proyek yang telah dipublikasikan dan dapat diakses secara publik — demo dan kode sumber tersedia melalui link proyek.</p>
+            </div>
+        
+        </div>
+
+        <div class="card">
+          <div class="section-title">Pendidikan</div>
+          <div class="item">
+            <h3>D4 Teknik Informasi dan Komputer — Politeknik Negeri Medan</h3>
+            <div class="muted">2023</div>
+            <p class="muted">Fokus pada merancang, membangun, menguji, dan memelihara perangkat lunak berkualitas yang memenuhi kebutuhan pengguna</p>
+          </div>
+          <div class="item">
+            <h3>TKJ (Teknik Komputer dan Jaringan) — SMKS Teknologi Balam</h3>
+            <div class="muted">2020 — 2023</div>
+            <p class="muted">Kurikulum fokus pada instalasi jaringan, terminasi, dan pemeliharaan dasar perangkat jaringan.</p>
+          </div>
+        </div>
+      </section>
+
+      <aside>
+        <div class="profile-block">
+          <div class="section-title">Keahlian</div>
+          <ul class="skills">
+            <li>HTML / CSS</li>
+            <li>JavaScript (vanilla)</li>
+            <li>Progressive Web App (Service Worker)</li>
+            <li>Optimasi performa & minifikasi aset</li>
+            <li>Responsive design</li>
+            <li>Git & deployment (GitHub Pages)</li>
+            <li>Firebase — tingkat dasar</li>
+            <li>Instalasi jaringan: fiber optik (single-core) dan instalasi listrik dasar</li>
+          </ul>
+        </div>
+
+        <div class="profile-block">
+          <div class="section-title">Kontak & Link</div>
+          <ul class="small-list">
+            <li>LinkedIn: <a href="https://www.linkedin.com/in/rasyid-kurniawan-aa4b7b28b/" target="_blank">rasyid-kurniawan</a></li>
+            <li>GitHub: <a href="https://github.com/krasyid822" target="_blank">krasyid822</a></li>
+            <li>Project URL: <a href="https://krasyid822.github.io" target="_blank">krasyid822.github.io</a></li>
+          </ul>
+        </div>
+
+        <div class="profile-block">
+          <div class="section-title">Sertifikasi & Pelatihan</div>
+          <ul class="small-list">
+            <li>Seminar Google Club — Kampus IBBI Medan - 11/05/2024</li>
+            <li>Pelatihan VSGA Kominfo — Junior Network - 2024</li>
+          </ul>
+        </div>
+
+        <div class="profile-block">
+          <div class="section-title">Bahasa</div>
+          <ul class="small-list">
+            <li>Bahasa Indonesia — Fasih</li>
+            <li>English — Basic</li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      <!-- Template dibuat oleh Anda • Sesuaikan konten sebelum mengirim lamaran -->
+       Ctrl+P untuk mencetak atau simpan sebagai PDF • Dibuat oleh Rasyid Kurniawan
+    </footer>
+  </div>
+
+  <!-- Petunjuk singkat untuk pengguna -->
+  <script>
+    // Jika ingin menyesuaikan cepat: ganti teks langsung pada file ini.
+    // Untuk mencetak: tekan Ctrl+P (Windows) atau gunakan menu Print.
+  </script>
+</body>
+</html>
