@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Exec=python /home/rasyidk/scripts/img_to_path.py
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=Clipboard Image to Path Converter
